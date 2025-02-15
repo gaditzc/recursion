@@ -1,5 +1,84 @@
 
 
+def is_valid(board, slot, word):
+    r, c, length, direction = slot
+    if len(word) != length:
+        return False
+
+    if direction == 'H':
+        for j in range(length):
+            if board[r][c + j] not in ('#', word[j]):
+                return False
+    else:  # Vertical placement
+        for i in range(length):
+            if board[r + i][c] not in ('#', word[i]):
+                return False
+    return True
+
+
+def place_word(board, slot, word):
+    r, c, length, direction = slot
+    new_board = [row[:] for row in board]  # Copy board to avoid mutation
+    if direction == 'H':
+        for j in range(length):
+            new_board[r][c + j] = word[j]
+    else:
+        for i in range(length):
+            new_board[r + i][c] = word[i]
+    return new_board
+
+
+def solve_crossword(board, slots, words, used_words, idx=0):
+    if idx == len(slots):
+        return board  # Solved crossword
+
+    slot = slots[idx]
+    for i in range(len(words)):  # Using recursion to iterate over words
+        if i not in used_words and is_valid(board, slot, words[i]):
+            new_board = place_word(board, slot, words[i])
+            solution = solve_crossword(new_board, slots, words, used_words | {i}, idx + 1)
+            if solution:
+                return solution
+    return None  # No solution found
+
+
+def print_board(board):
+    for row in board:
+        print('|', ' | '.join(row), '|')
+
+
+def crossword_generator():
+    # Input handling (loops allowed for reading input)
+    size = int(input("Please enter the dimensions of the crossword grid: "))
+    num_slots = int(input("Please enter the number of slots in the crossword: "))
+
+    print("Please enter the details for each slot (Row, Column, Length, Direction):")
+    slots = [tuple(input().split()) for _ in range(num_slots)]
+    slots = [(int(r), int(c), int(length), direction) for r, c, length, direction in slots]
+
+    num_words = int(input("Please enter the number of words in the dictionary: "))
+    while num_words < num_slots:
+        print(f"The dictionary must contain at least {num_slots} words. Please enter a valid dictionary size:")
+        num_words = int(input())
+
+    print("Please enter the words for the dictionary: ")
+    words = [input() for _ in range(num_words)]
+
+    # Initialize the board
+    board = [['#' for _ in range(size)] for _ in range(size)]
+
+    # Solve using recursion
+    solution = solve_crossword(board, slots, words, set())
+
+    if solution:
+        print_board(solution)
+    else:
+        print("This crossword cannot be solved.")
+
+
+# Run the crossword generator
+crossword_generator()
+
 
 def robot_paths(x, y):
     if x < 0 or y < 0:
