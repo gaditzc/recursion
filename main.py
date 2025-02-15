@@ -1,11 +1,4 @@
-def display_menu():
-    print("\nChoose an option:")
-    print("1. Robot Paths")
-    print("2. The Human Pyramid")
-    print("3. Parenthesis Validation")
-    print("4. Queens Battle")
-    print("5. Crossword Generator")
-    print("6. Exit")
+
 
 
 def robot_paths(x, y):
@@ -41,32 +34,63 @@ def human_pyramid():
         print(" ".join(f"{pyramid_weight(i, j, pyramid):.2f}" for j in range(i + 1)))
 
 
-def is_balanced_helper(chars, stack, index):
-    if index == len(chars):
-        return not stack
-
-    char = chars[index]
-    opening = "({[<"
-    closing = ")}]>"
+def is_balanced(expression, stack=[]):
     pairs = {')': '(', ']': '[', '}': '{', '>': '<'}
-
-    if char in opening:
-        stack.append(char)
-    elif char in closing:
-        if not stack or stack[-1] != pairs[char]:
-            return False
-        stack.pop()
-
-    return is_balanced_helper(chars, stack, index + 1)
+    if not expression:
+        return not stack
+    char, *rest = expression
+    if char in pairs.values():
+        return is_balanced(rest, stack + [char])
+    elif char in pairs.keys():
+        return stack and stack[-1] == pairs[char] and is_balanced(rest, stack[:-1])
+    return is_balanced(rest, stack)
 
 
 def parenthesis_validation():
-    print("Please enter a term for validation:")
-    chars = list(input())
-    if is_balanced_helper(chars, [], 0):
+    expression = list(input("Please enter a term for validation: "))
+    if is_balanced(expression):
         print("The parentheses are balanced correctly.")
     else:
         print("The parentheses are not balanced correctly.")
+
+
+def solve_queens(i, j, board, cols, colors, sol):
+    if i == len(board):
+        return sol
+    if j == len(board):
+        return None
+    if j not in cols and board[i][j] not in colors and (i - 1, j - 1) not in sol and (i - 1, j + 1) not in sol:
+        sol_ = solve_queens(i + 1, 0, board, cols | {j}, colors | {board[i][j]}, sol | {(i, j)})
+        if sol_:
+            return sol_
+    return solve_queens(i, j + 1, board, cols, colors, sol)
+
+
+def queens_battle():
+    size = int(input("Please enter the board size: "))
+    print(f"Please enter the {size}x{size} board:")
+
+    board = [list(input().strip()) for _ in range(size)]
+    solution = solve_queens(0, 0, board, set(), set(), set())
+    if solution:
+        output_board = [['*' for _ in range(size)] for _ in range(size)]
+        for r, c in solution:
+            output_board[r][c] = 'X'
+        print("Solution:")
+        for row in output_board:
+            print(" ".join(row))
+    else:
+        print("No valid solution found.")
+
+
+def display_menu():
+    print("\nChoose an option:")
+    print("1. Robot Paths")
+    print("2. The Human Pyramid")
+    print("3. Parenthesis Validation")
+    print("4. Queens Battle")
+    print("5. Crossword Generator")
+    print("6. Exit")
 
 
 def main():
@@ -87,7 +111,7 @@ def main():
             parenthesis_validation()
         elif choice == '4':
             print("Executing Queens Battle...")
-            # Call the Queens Battle function here
+            queens_battle()
         elif choice == '5':
             print("Executing Crossword Generator...")
             # Call the Crossword Generator function here
